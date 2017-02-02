@@ -1,8 +1,8 @@
 <!doctype html>
-<!--<iframe></iframe>-->
+<iframe src="discard_document_observable_state-frame-frame.html"></iframe>
 <script>
-  window.id = "childA"
-//var t = opener.t;
+  window.id = "child"
+  localStorage.setItem("pre-departed-test", "test");
 
   // Like getOwnPropertyDescriptor, but without the 'own' (instance-only lookup semantics)
   function getPropertyDescriptor(object, prop) {
@@ -23,22 +23,41 @@
 
   // This browsing context will shortly be torn down.
   (function (global) {
-    // Test browsing context state / relationships
 
-
-
-  // Test JS Libary functions
-
-  // Test DOM Constructors
+    // Test JS Libary functions
+    // Test DOM Constructors
     global.dearlyDeparted = {
       testMutationObserver: function () {
         var mo = new MutationObserver( function callback(records) { } );
       },
+      /// Test browsing context state / relationships
+      // window.parent
       _parentLive: function () { return parent; },
-      _parentCall: function () { return parent
-      _parentBind: getProxiedPropertyGetter(global, "parent").bind(global)
+      _parentCall: function () { return getProxiedPropertyGetter(global, "parent").call(global); },
+      _parentBind: getProxiedPropertyGetter(global, "parent").bind(global),
+      // window.top
+      _topLive: function () { return top; },
+      _topCall: function () { return getProxiedPropertyGetter(global, "top").call(global); },
+      _topBind: getProxiedPropertyGetter(global, "top").bind(global),
+      // window.self
+      _selfLive: function () { return self; },
+      _selfCall: function () { return getProxiedPropertyGetter(global, "self").call(global); },
+      _selfBind: getProxiedPropertyGetter(global, "self").bind(global),
+      // window.window
+      _windowLive: function () { return window; },
+      _windowCall: function () { return getProxiedPropertyGetter(global, "window").call(global); },
+      _windowBind: getProxiedPropertyGetter(global, "window").bind(global),
+      // window.frames
+      _framesLive: function () { return frames; },
+      _framesCall: function () { return getProxiedPropertyGetter(global, "frames").call(global); },
+      _framesBind: getProxiedPropertyGetter(global, "frames").bind(global),
+      // window.frameElement
+      _frameElementLive: function () { return frameElement; },
+      _frameElementCall: function () { return getProxiedPropertyGetter(global, "frameElement").call(global); },
+      _frameElementBind: getProxiedPropertyGetter(global, "frameElement").bind(global),
+      // window.localStorage
+      _localStorageLive: function () { return localStorage; },
+      _localStorageGetItemBind: localStorage.getItem.bind(localStorage)
     }
   })(this);
-  // test pre-bound properties
-  //var _parent = getPropDesc(window, "parent").get.bind(this);
 </script>

@@ -1,30 +1,23 @@
 <!doctype html>
-<title>Nested browsing context state correct when removing iframe from document</title>
+<title>Post-discarded document state</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <div id="log"></div>
 <iframe></iframe>
 <script>
 window.id = "parent";
-window.tests = null;
+window.dearlyDeparted = null;
 onload = function start() {
   onload = null; // Clears the platform's ref to this function...
   var iframe = document.querySelector('iframe');
   iframe.onload = function iframetestloaded() {
       iframe.onload = null;
-      window.tests = iframe.contentWindow.tests;
+      window.dearlyDeparted = iframe.contentWindow.dearlyDeparted;
       iframe.remove();
       setTimeout(testDriver, 10);
   };
   iframe.src = "discard_document_observable_state-frame.html";
 };
-
-testset = [
-  async_test("after document is discarded, parent is null"),
-  function () {
-    alert(window.tests.testParent2())
-  }
-];
 
 function testDriver() {
   for (var i = 0, len = testset.length; i < len; i+=2) {
@@ -33,6 +26,87 @@ function testDriver() {
   }
 }
 
-//var w = window.open("discard_iframe_history_1-1.html");
+testset = [
+  async_test("after document is discarded, parent is null (implicit late-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._parentLive(), null);
+  },
+  async_test("after document is discarded, parent is null (explicit late-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._parentCall(), null);
+  },
+  async_test("after document is discarded, parent is null (explicit early-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._parentBind(), null);
+  },
+  async_test("after document is discarded, top is null (implicit late-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._topLive(), null);
+  },
+  async_test("after document is discarded, top is null (explicit late-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._topCall(), null);
+  },
+  async_test("after document is discarded, top is null (explicit early-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._topBind(), null);
+  },
+  async_test("after document is discarded, self is null (implicit late-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._selfLive(), null);
+  },
+  async_test("after document is discarded, self is null (explicit late-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._selfCall(), null);
+  },
+  async_test("after document is discarded, self is null (explicit early-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._selfBind(), null);
+  },
+  async_test("after document is discarded, window is null (implicit late-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._windowLive(), null);
+  },
+  async_test("after document is discarded, window is null (explicit late-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._windowCall(), null);
+  },
+  async_test("after document is discarded, window is null (explicit early-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._windowBind(), null);
+  },
+  async_test("after document is discarded, frames is null (implicit late-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._framesLive(), null);
+  },
+  async_test("after document is discarded, frames is null (explicit late-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._framesCall(), null);
+  },
+  async_test("after document is discarded, frames is null (explicit early-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._framesBind(), null);
+  },
+  async_test("after document is discarded, frameElement is null (implicit late-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._frameElementLive(), null);
+  },
+  async_test("after document is discarded, frameElement is null (explicit late-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._frameElementCall(), null);
+  },
+  async_test("after document is discarded, frameElement is null (explicit early-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._frameElementBind(), null);
+  },
+//  async_test("after document is discarded, localStorage continues to work (implicit late-bound call)"),
+//  function () {
+//    assert_equals(window.dearlyDeparted._localStorageLive(), null);
+//  },
+  async_test("after document is discarded, localStorage.getItem continues to work (explicit early-bound call)"),
+  function () {
+    assert_equals(window.dearlyDeparted._localStorageGetItemBind("pre-departed-test"), "test");
+  }
+];
 </script>
 
