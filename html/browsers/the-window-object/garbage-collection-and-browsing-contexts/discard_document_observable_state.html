@@ -1,0 +1,38 @@
+<!doctype html>
+<title>Nested browsing context state correct when removing iframe from document</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<div id="log"></div>
+<iframe></iframe>
+<script>
+window.id = "parent";
+window.tests = null;
+onload = function start() {
+  onload = null; // Clears the platform's ref to this function...
+  var iframe = document.querySelector('iframe');
+  iframe.onload = function iframetestloaded() {
+      iframe.onload = null;
+      window.tests = iframe.contentWindow.tests;
+      iframe.remove();
+      setTimeout(testDriver, 10);
+  };
+  iframe.src = "discard_document_observable_state-frame.html";
+};
+
+testset = [
+  async_test("after document is discarded, parent is null"),
+  function () {
+    alert(window.tests.testParent2())
+  }
+];
+
+function testDriver() {
+  for (var i = 0, len = testset.length; i < len; i+=2) {
+      testset[i].step(testset[i+1]);
+      testset[i].done();
+  }
+}
+
+//var w = window.open("discard_iframe_history_1-1.html");
+</script>
+

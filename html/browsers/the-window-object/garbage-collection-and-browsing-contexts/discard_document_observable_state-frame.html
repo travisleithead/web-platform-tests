@@ -1,0 +1,44 @@
+<!doctype html>
+<!--<iframe></iframe>-->
+<script>
+  window.id = "childA"
+//var t = opener.t;
+
+  // Like getOwnPropertyDescriptor, but without the 'own' (instance-only lookup semantics)
+  function getPropertyDescriptor(object, prop) {
+    if (typeof object[prop] == "undefined")
+      return;
+    while (object != null && !Object.getOwnPropertyDescriptor(object, prop))
+      object = Object.getPrototypeOf(object);
+    return Object.getOwnPropertyDescriptor(object, prop);
+  }
+
+  function getProxiedPropertyGetter(proxy, getterName) {
+    var desc = getPropertyDescriptor(proxy, getterName);
+    if (typeof desc.value == "undefined")
+      return desc.get;
+    else
+      return function() { throw new Error("Test pre-condition failed: property '" + getterName + "' does not have a 'get' function"); }
+  }
+
+  // This browsing context will shortly be torn down.
+  (function (global) {
+    // Test browsing context state / relationships
+
+
+
+  // Test JS Libary functions
+
+  // Test DOM Constructors
+    global.dearlyDeparted = {
+      testMutationObserver: function () {
+        var mo = new MutationObserver( function callback(records) { } );
+      },
+      _parentLive: function () { return parent; },
+      _parentCall: function () { return parent
+      _parentBind: getProxiedPropertyGetter(global, "parent").bind(global)
+    }
+  })(this);
+  // test pre-bound properties
+  //var _parent = getPropDesc(window, "parent").get.bind(this);
+</script>
