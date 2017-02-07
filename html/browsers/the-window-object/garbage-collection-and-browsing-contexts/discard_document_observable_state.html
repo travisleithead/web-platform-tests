@@ -5,7 +5,7 @@
 <div id="log"></div>
 <iframe></iframe>
 <script>
-window.id = "parent";
+window._id = "parent";
 window.dearlyDeparted = null;
 onload = function start() {
   onload = null; // Clears the platform's ref to this function...
@@ -21,12 +21,15 @@ onload = function start() {
 
 function testDriver() {
   for (var i = 0, len = testset.length; i < len; i+=2) {
-      testset[i].step(testset[i+1]);
+    if (testset[i].step(testset[i+1]) != true)
       testset[i].done();
   }
 }
 
 testset = [
+  ///
+  /// Test Browsing context-access APIs
+  ///
   async_test("after document is discarded, parent is null (implicit late-bound call)"),
   function () {
     assert_equals(window.dearlyDeparted._parentLive(), null);
@@ -51,41 +54,61 @@ testset = [
   function () {
     assert_equals(window.dearlyDeparted._topBind(), null);
   },
-  async_test("after document is discarded, self is null (implicit late-bound call)"),
+  async_test("after document is discarded, self is [still] the window (implicit late-bound call)"),
   function () {
-    assert_equals(window.dearlyDeparted._selfLive(), null);
+    assert_not_equals(window.dearlyDeparted._selfLive(), window);
+    assert_equals(window.dearlyDeparted._selfLive(), window.dearlyDeparted._window);
   },
-  async_test("after document is discarded, self is null (explicit late-bound call)"),
+  async_test("after document is discarded, self is [still] the window (explicit late-bound call)"),
   function () {
-    assert_equals(window.dearlyDeparted._selfCall(), null);
+    assert_not_equals(window.dearlyDeparted._selfCall(), window);
+    assert_equals(window.dearlyDeparted._selfCall(), window.dearlyDeparted._window);
   },
-  async_test("after document is discarded, self is null (explicit early-bound call)"),
+  async_test("after document is discarded, self is [still] the window (explicit early-bound call)"),
   function () {
-    assert_equals(window.dearlyDeparted._selfBind(), null);
+    assert_not_equals(window.dearlyDeparted._selfBind(), window);
+    assert_equals(window.dearlyDeparted._selfBind(), window.dearlyDeparted._window);
   },
-  async_test("after document is discarded, window is null (implicit late-bound call)"),
+  async_test("after document is discarded, window is [still] the window (implicit late-bound call)"),
   function () {
-    assert_equals(window.dearlyDeparted._windowLive(), null);
+    assert_not_equals(window.dearlyDeparted._windowLive(), window);
+    assert_equals(window.dearlyDeparted._windowLive(), window.dearlyDeparted._window);
   },
-  async_test("after document is discarded, window is null (explicit late-bound call)"),
+  async_test("after document is discarded, window is [still] the window (explicit late-bound call)"),
   function () {
-    assert_equals(window.dearlyDeparted._windowCall(), null);
+    assert_not_equals(window.dearlyDeparted._windowCall(), window);
+    assert_equals(window.dearlyDeparted._windowCall(), window.dearlyDeparted._window);
   },
-  async_test("after document is discarded, window is null (explicit early-bound call)"),
+  async_test("after document is discarded, window is [still] the window (explicit early-bound call)"),
   function () {
-    assert_equals(window.dearlyDeparted._windowBind(), null);
+    assert_not_equals(window.dearlyDeparted._windowBind(), window);
+    assert_equals(window.dearlyDeparted._windowBind(), window.dearlyDeparted._window);
   },
-  async_test("after document is discarded, frames is null (implicit late-bound call)"),
+  async_test("after document is discarded, 'this' is [still] the window (explicit late-bound call)"),
   function () {
-    assert_equals(window.dearlyDeparted._framesLive(), null);
+    assert_not_equals(window.dearlyDeparted._thisCall(), window);
+    assert_equals(window.dearlyDeparted._thisCall(), window.dearlyDeparted._window);
   },
-  async_test("after document is discarded, frames is null (explicit late-bound call)"),
+  async_test("after document is discarded, frames is available (implicit late-bound call)"),
   function () {
-    assert_equals(window.dearlyDeparted._framesCall(), null);
+    assert_not_equals(window.dearlyDeparted._framesLive(), window);
+    assert_equals(window.dearlyDeparted._framesLive(), window.dearlyDeparted._window);
   },
-  async_test("after document is discarded, frames is null (explicit early-bound call)"),
+  async_test("after document is discarded, frames is available (explicit late-bound call)"),
   function () {
-    assert_equals(window.dearlyDeparted._framesBind(), null);
+    assert_not_equals(window.dearlyDeparted._framesCall(), window);
+    assert_equals(window.dearlyDeparted._framesCall(), window.dearlyDeparted._window);
+  },
+  async_test("after document is discarded, frames is available (explicit early-bound call)"),
+  function () {
+    assert_not_equals(window.dearlyDeparted._framesBind(), window);
+    assert_equals(window.dearlyDeparted._framesBind(), window.dearlyDeparted._window);
+  },
+  async_test("after document is discarded, frames' length is zero"),
+  function () {
+    var framesWindow = window.dearlyDeparted._framesBind();
+    assert_equals(framesWindow, window.dearlyDeparted._window);
+    assert_equals(framesWindow.length, 0);
   },
   async_test("after document is discarded, frameElement is null (implicit late-bound call)"),
   function () {
@@ -99,10 +122,90 @@ testset = [
   function () {
     assert_equals(window.dearlyDeparted._frameElementBind(), null);
   },
-//  async_test("after document is discarded, localStorage continues to work (implicit late-bound call)"),
-//  function () {
-//    assert_equals(window.dearlyDeparted._localStorageLive(), null);
-//  },
+  ///
+  /// Test global/window object's properties are still present (not cleared)
+  ///
+  async_test("after document is discarded, author-defined data property is present"),
+  function () {
+    var departedWindow = window.dearlyDeparted._thisCall();
+    assert_equals(departedWindow, window.dearlyDeparted._window);
+    assert_equals(departedWindow._id, "child");
+  },
+  async_test("after document is discarded, author-defined function is present"),
+  function () {
+    var departedWindow = window.dearlyDeparted._thisCall();
+    assert_equals(departedWindow, window.dearlyDeparted._window);
+    assert_equals(typeof departedWindow.getProxiedPropertyGetter, "function");
+  },
+  async_test("after document is discarded, author-defined function can be called"),
+  function () {
+    var departedWindow = window.dearlyDeparted._thisCall();
+    assert_equals(departedWindow, window.dearlyDeparted._window);
+    assert_equals(typeof departedWindow.getProxiedPropertyGetter, "function");
+    assert_equals(typeof departedWindow.getProxiedPropertyGetter(window.dearlyDeparted._window, "_accessor"), "function");
+    assert_equals(departedWindow.getProxiedPropertyGetter(window.dearlyDeparted._window, "_accessor")(), "getterfunc");
+  },
+  async_test("after document is discarded, JS built-in library (Math) is present"),
+  function () {
+    var departedWindow = window.dearlyDeparted._thisCall();
+    assert_equals(departedWindow, window.dearlyDeparted._window);
+    assert_equals(departedWindow.Math, window.dearlyDeparted._Math);
+  },
+  async_test("after document is discarded, JS built-in constructor (Promise) is present"),
+  function () {
+    var departedWindow = window.dearlyDeparted._thisCall();
+    assert_equals(departedWindow, window.dearlyDeparted._window);
+    assert_equals(departedWindow.Promise, window.dearlyDeparted._Promise);
+  },
+  async_test("after document is discarded, DOM interface (HTMLElement) object is present"),
+  function () {
+    var departedWindow = window.dearlyDeparted._thisCall();
+    assert_equals(departedWindow, window.dearlyDeparted._window);
+    assert_equals(departedWindow.HTMLElement, window.dearlyDeparted._HTMLElement);
+  },
+  async_test("after document is discarded, a property of an element inheriting from a DOM interface prototype (HTMLElement) is present"),
+  function () {
+    assert_equals(window.dearlyDeparted._div._elementInherited, "inherited");
+  },
+  ///
+  /// Test Constructable interfaces
+  ///
+  async_test("after document is discarded, a JS built-in Constructor can be called"),
+  function () {
+    var departedWindow = window.dearlyDeparted._thisCall();
+    assert_equals(departedWindow, window.dearlyDeparted._window);
+    assert_equals(departedWindow.Array, window.dearlyDeparted._Array);
+    assert_equals((new departedWindow.Array())._arrayExtension, "array_extension");
+  },
+  async_test("after document is discarded, a DOM Constructor (XHR) can be called"),
+  function () {
+    var departedWindow = window.dearlyDeparted._thisCall();
+    assert_equals(departedWindow, window.dearlyDeparted._window);
+    assert_equals(departedWindow.XMLHttpRequest, window.dearlyDeparted._XMLHttpRequest);
+    assert_equals((new departedWindow.XMLHttpRequest())._xhrExtension, "xhr_extension");
+  },
+  (function () { window.xhrTest = async_test("after document is discarded, a DOM Constructor (XHR) can return a result");
+    return window.xhrTest;
+  })(),
+  function () {
+    var departedWindow = window.dearlyDeparted._thisCall();
+    assert_equals(departedWindow, window.dearlyDeparted._window);
+    assert_equals(departedWindow.XMLHttpRequest, window.dearlyDeparted._XMLHttpRequest);
+    var departedXHR = new departedWindow.XMLHttpRequest();
+    departedXHR.open("GET", "discard_document_observable_state-frame-frame.html");
+    //departedXHR.onload = assert_unreached(function (e) { });
+    departedXHR.onload = function (e) { alert('whaaaat?'); window.xhrTest.done(); };
+    //departedXHR.onerror = window.xhrTest.step_func_done(function (e) {
+    //  assert_equals(e.target, departedXHR);
+    //});
+    departedXHR.onerror = function (e) { alert('uuuuhhh'); };
+    departedXHR.send();
+    return true; // Skips auto-test-done()
+  },
+
+  ///
+  /// Test IDB/localStorage
+  ///
   async_test("after document is discarded, localStorage.getItem continues to work (explicit early-bound call)"),
   function () {
     assert_equals(window.dearlyDeparted._localStorageGetItemBind("pre-departed-test"), "test");

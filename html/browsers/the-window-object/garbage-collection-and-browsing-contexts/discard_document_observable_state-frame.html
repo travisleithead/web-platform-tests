@@ -1,7 +1,14 @@
 <!doctype html>
 <iframe src="discard_document_observable_state-frame-frame.html"></iframe>
 <script>
-  window.id = "child"
+  /// Test helpers for global object properties, accessors, functions, etc.
+  window._id = "child";
+  Object.defineProperty(Window.prototype, "_accessor", { get: function () { return "getterfunc"; } })
+  Array.prototype._arrayExtension = "array_extension";
+  HTMLElement.prototype._elementInherited = "inherited";
+  XMLHttpRequest.prototype._xhrExtension = "xhr_extension"
+
+  // ensure something is in the localStorage for later retrieval...
   localStorage.setItem("pre-departed-test", "test");
 
   // Like getOwnPropertyDescriptor, but without the 'own' (instance-only lookup semantics)
@@ -15,10 +22,13 @@
 
   function getProxiedPropertyGetter(proxy, getterName) {
     var desc = getPropertyDescriptor(proxy, getterName);
-    if (typeof desc.value == "undefined")
-      return desc.get;
-    else
+    if (desc == null || typeof desc.value != "undefined") {
+      if (desc == null)
+        return function() { throw new Error("Test pre-condition failed: property '" + getterName + "' does not exist on the object or its prototype chain."); }
       return function() { throw new Error("Test pre-condition failed: property '" + getterName + "' does not have a 'get' function"); }
+    }
+    else
+      return desc.get;
   }
 
   // This browsing context will shortly be torn down.
@@ -30,7 +40,8 @@
       testMutationObserver: function () {
         var mo = new MutationObserver( function callback(records) { } );
       },
-      /// Test browsing context state / relationships
+      _window: global,
+      /// Test Browsing context-access APIs
       // window.parent
       _parentLive: function () { return parent; },
       _parentCall: function () { return getProxiedPropertyGetter(global, "parent").call(global); },
@@ -47,6 +58,8 @@
       _windowLive: function () { return window; },
       _windowCall: function () { return getProxiedPropertyGetter(global, "window").call(global); },
       _windowBind: getProxiedPropertyGetter(global, "window").bind(global),
+      // 'this' of the target's window (_thisCall & _thisBind don't make sense because 'this' is not a property of the global)
+      _thisCall:  (function () { return this; }).bind(global),
       // window.frames
       _framesLive: function () { return frames; },
       _framesCall: function () { return getProxiedPropertyGetter(global, "frames").call(global); },
@@ -55,6 +68,16 @@
       _frameElementLive: function () { return frameElement; },
       _frameElementCall: function () { return getProxiedPropertyGetter(global, "frameElement").call(global); },
       _frameElementBind: getProxiedPropertyGetter(global, "frameElement").bind(global),
+      /// Test global/window object's properties are still present (not cleared)
+      // (see _id at top of file)
+      _Math: global.Math,
+      _Promise: global.Promise,
+      _HTMLElement: global.HTMLElement,
+      _div: document.createElement('div'), // will (or should) inherit "_elementInherited" via prototype.
+      /// Test Constructors
+      _Array: global.Array,
+      _XMLHttpRequest: global.XMLHttpRequest,
+      /// Test IDB/local storage
       // window.localStorage
       _localStorageLive: function () { return localStorage; },
       _localStorageGetItemBind: localStorage.getItem.bind(localStorage)
