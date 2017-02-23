@@ -209,6 +209,10 @@ testset = [
   async_test("after document is discarded, localStorage.getItem continues to work (explicit early-bound call)"),
   function () {
     assert_equals(window.dearlyDeparted._localStorageGetItemBind("pre-departed-test"), "test");
+  },
+  async_test("after document is discarded, focus API is callable"),
+  function () {
+    var
   }
 ];
 </script>

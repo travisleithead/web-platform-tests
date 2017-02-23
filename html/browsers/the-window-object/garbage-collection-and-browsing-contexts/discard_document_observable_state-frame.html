@@ -1,5 +1,8 @@
 <!doctype html>
 <iframe src="discard_document_observable_state-frame-frame.html"></iframe>
+<div id="div_in_tree">
+  <input id="input_in_tree">
+</div>
 <script>
   /// Test helpers for global object properties, accessors, functions, etc.
   window._id = "child";
@@ -80,7 +83,10 @@
       /// Test IDB/local storage
       // window.localStorage
       _localStorageLive: function () { return localStorage; },
-      _localStorageGetItemBind: localStorage.getItem.bind(localStorage)
+      _localStorageGetItemBind: localStorage.getItem.bind(localStorage),
+      /// Test focus management
+      // input.focus()
+      _input_out_of_tree: document
     }
   })(this);
 </script>
